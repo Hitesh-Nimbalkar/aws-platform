@@ -1,32 +1,22 @@
 
-variable "organization" {
-  description = "Organization name (platform-level constant)"
-  type        = string
+data "aws_vpc" "default" {
+  default = true
 }
-variable "project" {
-  description = "Project name (project-specific input)"
-  type        = string
+# Fetch AWS account ID dynamically
+data "aws_caller_identity" "current" {}
+# Fetch default VPC for the account/region
+data "aws_vpc" "default" {
+    default = true
 }
-variable "environment" {
-  description = "Environment name (platform-level managed)"
-  type        = string
+# Consolidated locals for account-wide settings
+locals {
+    organization    = "dummy"
+    project         = "dummy-project"
+    account_region  = "ap-south-2"
+    environment     = local.account_region
+    account_id      = data.aws_caller_identity.current.account_id
+    default_vpc_id  = data.aws_vpc.default.id
 }
-variable "purpose" {
-  description = "Purpose/function identifier (specific to this S3 bucket)"
-  type        = string
-}
-variable "bucket_name" {
-  description = "Name of the S3 bucket (optional, if not provided will be auto-generated)"
-  type        = string
-  default     = null
-}
-variable "force_destroy" {
-  description = "A boolean that indicates all objects should be deleted from the bucket when the bucket is destroyed"
-  type        = bool
-  default     = false
-}
-variable "common_tags" {
-  description = "A map of tags to assign to all resources"
-  type        = map(string)
-  default     = {}
+output "default_vpc_id" {
+    value = local.default_vpc_id
 }
