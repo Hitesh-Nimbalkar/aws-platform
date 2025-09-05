@@ -4,19 +4,19 @@
 # =============================================================================
 # Purpose: Output values from Lambda module resources for use by other modules
 output "lambda_function_arn" {
-  value = aws_lambda_function.this[0].arn
+  value = length(aws_lambda_function.this) > 0 ? aws_lambda_function.this[0].arn : null
 }
 output "lambda_function_name" {
-  value = aws_lambda_function.this[0].function_name
+  value = length(aws_lambda_function.this) > 0 ? aws_lambda_function.this[0].function_name : null
 }
 output "lambda_function_invoke_arn" {
-  value = aws_lambda_function.this[0].invoke_arn
+  value = length(aws_lambda_function.this) > 0 ? aws_lambda_function.this[0].invoke_arn : null
 }
 output "lambda_function_qualified_arn" {
-  value = aws_lambda_function.this[0].qualified_arn
+  value = length(aws_lambda_function.this) > 0 ? aws_lambda_function.this[0].qualified_arn : null
 }
 output "lambda_function_version" {
-  value = aws_lambda_function.this[0].version
+  value = length(aws_lambda_function.this) > 0 ? aws_lambda_function.this[0].version : null
 }
 
 output "lambda_log_group_arn" {
