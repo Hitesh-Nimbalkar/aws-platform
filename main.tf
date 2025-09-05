@@ -112,7 +112,7 @@ module "networking" {
   purpose               = "monitoring"
   vpc_cidr              = "10.10.0.0/16" # Update as needed
 private_subnet_count  = 2
-    availability_zones    = ["ap-south-1a", "ap-south-1b"] # Hyderabad zones
+    availability_zones    = ["ap-south-2a", "ap-south-2b"] # Hyderabad zones
   ssh_cidr_blocks       = ["10.10.0.0/16"] # Restrict as needed
   grafana_cidr_blocks   = ["10.10.0.0/16"] # Restrict as needed
   tags                  = var.common_tags
@@ -130,32 +130,32 @@ resource "aws_ecr_repository" "platform" {
     scan_on_push = true
   }
   tags = var.common_tags
-}
-# =============================================================================
-# Fargate: Monitoring Service
-# =============================================================================
-module "fargate_monitoring" {
-  source         = "./modules/fargate"
-  organization   = var.organization
-  environment    = var.environment
-  project        = var.project
-  purpose        = "monitoring"
-  cpu            = "256"
-  memory         = "512"
-  execution_role_policy_arns = [
-    "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-    # Add more managed or custom policy ARNs as needed
-  ]
-  task_role_policy_arns = [
-    # Add managed or custom policy ARNs for your app's needs
-  ]
-  container_definitions = file("./fargate/container_definitions.json") # Update path as needed
-  desired_count    = 1
-  subnets          = module.networking.private_subnet_ids
-  security_groups  = [module.networking.security_group_id]
-  assign_public_ip = false
-}
-# ============================================================================ #
-# FUNCTIONALITY: GRAFANA MONITORING (FARGATE + ECR)                          #
-# ============================================================================ #
+# }
+# # =============================================================================
+# # Fargate: Monitoring Service
+# # =============================================================================
+# module "fargate_monitoring" {
+#   source         = "./modules/fargate"
+#   organization   = var.organization
+#   environment    = var.environment
+#   project        = var.project
+#   purpose        = "monitoring"
+#   cpu            = "256"
+#   memory         = "512"
+#   execution_role_policy_arns = [
+#     "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+#     # Add more managed or custom policy ARNs as needed
+#   ]
+#   task_role_policy_arns = [
+#     # Add managed or custom policy ARNs for your app's needs
+#   ]
+#   container_definitions = file("./fargate/container_definitions.json") # Update path as needed
+#   desired_count    = 1
+#   subnets          = module.networking.private_subnet_ids
+#   security_groups  = [module.networking.security_group_id]
+#   assign_public_ip = false
+# }
+# # ============================================================================ #
+# # FUNCTIONALITY: GRAFANA MONITORING (FARGATE + ECR)                          #
+# # ============================================================================ #
 
