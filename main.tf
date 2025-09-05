@@ -84,12 +84,12 @@ resource "aws_cloudwatch_event_rule" "cloudwatch_logs_backup_schedule" {
 resource "aws_cloudwatch_event_target" "cloudwatch_logs_backup_lambda_target" {
   rule      = aws_cloudwatch_event_rule.cloudwatch_logs_backup_schedule.name
   target_id = "cloudwatch-logs-backup-lambda"
-  arn       = module.cloudwatch_logs_backup_lambda.lambda_function_arn
+  arn       = module.cloudwatch_logs_backup_lambda.lambda_function_arn[0]
 }
 resource "aws_lambda_permission" "allow_cloudwatch_events" {
   statement_id  = "AllowExecutionFromCloudWatchEvents"
   action        = "lambda:InvokeFunction"
-  function_name = module.cloudwatch_logs_backup_lambda.lambda_function_name
+  function_name = module.cloudwatch_logs_backup_lambda.lambda_function_name[0]
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.cloudwatch_logs_backup_schedule.arn
 }
