@@ -7,7 +7,7 @@ data "aws_caller_identity" "current" {}
 locals {
     organization    = "dummy"
     project         = "dummy-project"
-    account_region  = "ap-south-2"
+    account_region  = "ap-south-1"
     environment     = local.account_region
     account_id      = data.aws_caller_identity.current.account_id
     default_vpc_id  = data.aws_vpc.default.id
