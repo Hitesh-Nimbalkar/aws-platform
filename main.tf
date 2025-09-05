@@ -42,9 +42,9 @@ module "cloudwatch_logs_backup_lambda" {
   environment_variables = {
     S3_BUCKET = module.cloudwatch_logs_backup_bucket.bucket_name
   }
-  policy_arns = [
-    aws_iam_policy.cloudwatch_logs_to_s3.arn
-  ]
+  policy_arns = {
+    logs_to_s3 = aws_iam_policy.cloudwatch_logs_to_s3.arn
+  }
   tags = var.common_tags
 }
 # =============================================================================
