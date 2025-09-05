@@ -123,14 +123,14 @@ private_subnet_count  = 2
 # =============================================================================
 # ECR: Platform Docker Repository
 # =============================================================================
-resource "aws_ecr_repository" "platform" {
-  name                 = var.platform_ecr_repository
-  image_tag_mutability = "MUTABLE"
-  image_scanning_configuration {
-    scan_on_push = true
-  }
-  tags = var.common_tags
- }
+# resource "aws_ecr_repository" "platform" {
+#   name                 = var.platform_ecr_repository
+#   image_tag_mutability = "MUTABLE"
+#   image_scanning_configuration {
+#     scan_on_push = true
+#   }
+#   tags = var.common_tags
+#  }
 # # =============================================================================
 # # Fargate: Monitoring Service
 # # =============================================================================
