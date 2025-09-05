@@ -1,6 +1,7 @@
 # GitHub Actions workflow for Terraform in chatbot-document-v2
-# - Runs plan on all branches, apply only on main after approval
+# - Runs plan on all branches, apply/destroy only on main after approval
 # - Uses backend.tf in the repo root for state management
+
 name: Terraform CI/CD
 
 on:
@@ -22,9 +23,8 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-south-1   # Change to your region
+          aws-region: ap-south-1
 
-      # ✅ Debug step to confirm credentials are working
       - name: Debug AWS Identity
         run: aws sts get-caller-identity
 
@@ -39,7 +39,7 @@ jobs:
       - name: Terraform Format
         run: terraform fmt -recursive
 
-      - name: Terraform Format
+      - name: Terraform Format Check
         run: terraform fmt -check
 
       - name: Terraform Validate
@@ -49,8 +49,7 @@ jobs:
         id: plan
         run: terraform plan -no-color -out=tfplan.txt
 
-      - name: Show Plan Changes (Table)
-        id: show
+      - name: Show Plan Changes
         run: |
           terraform show -no-color tfplan.txt > plan.txt
           echo '::group::Terraform Plan'
@@ -66,9 +65,7 @@ jobs:
       - name: Add Plan Summary
         run: |
           echo '### Terraform Plan Output' >> $GITHUB_STEP_SUMMARY
-          echo '\n\n' >> $GITHUB_STEP_SUMMARY
           echo '\n\n<details><summary>Show Plan</summary>' >> $GITHUB_STEP_SUMMARY
-          echo '\n' >> $GITHUB_STEP_SUMMARY
           cat plan.txt >> $GITHUB_STEP_SUMMARY
           echo '\n</details>' >> $GITHUB_STEP_SUMMARY
 
@@ -88,9 +85,8 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-south-1   # change to your region
+          aws-region: ap-south-1
 
-      # ✅ Debug step here too (optional but recommended)
       - name: Debug AWS Identity
         run: aws sts get-caller-identity
 
@@ -110,3 +106,35 @@ jobs:
 
       - name: Terraform Apply (Manual Approval Required)
         run: terraform apply -auto-approve tfplan.txt
+
+  terraform-destroy:
+    name: Terraform Destroy
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+    needs: terraform-plan
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+
+      - name: Debug AWS Identity
+        run: aws sts get-caller-identity
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.5
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Destroy (Manual Approval Required)
+        run: terraform destroy -auto-approve
