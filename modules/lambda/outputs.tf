@@ -15,18 +15,6 @@ output "lambda_function_invoke_arn" {
 output "lambda_function_qualified_arn" {
   value = [for f in aws_lambda_function.this : f.qualified_arn]
 }
-output "lambda_function_arn" {
-  value = [for f in aws_lambda_function.this : f.arn]
-}
-output "lambda_function_name" {
-  value = [for f in aws_lambda_function.this : f.function_name]
-}
-output "lambda_function_invoke_arn" {
-  value = [for f in aws_lambda_function.this : f.invoke_arn]
-}
-output "lambda_function_qualified_arn" {
-  value = [for f in aws_lambda_function.this : f.qualified_arn]
-}
 output "lambda_function_version" {
   value = [for f in aws_lambda_function.this : f.version]
 }
