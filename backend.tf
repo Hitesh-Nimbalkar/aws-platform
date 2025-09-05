@@ -1,32 +1,43 @@
 
-variable "organization" {
-  description = "Organization name (platform-level constant)"
+terraform {
+  backend "s3" {
+    bucket         = var.tf_state_bucket
+    key            = var.tf_state_key
+    region         = var.tf_state_region
+    dynamodb_table = var.tf_state_dynamodb_table
+    encrypt        = true
+  }
+}
+
+resource "aws_s3_bucket" "tf_state" {
+  bucket = var.tf_state_bucket
+  force_destroy = false
+  tags = var.common_tags
+}
+resource "aws_s3_bucket_versioning" "tf_state_versioning" {
+  bucket = aws_s3_bucket.tf_state.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+# TERRAFORM STATE BACKEND CONFIGURATION
+# =============================================================================
+variable "tf_state_bucket" {
+  description = "The name of the S3 bucket for storing the Terraform state file."
   type        = string
 }
-variable "project" {
-  description = "Project name (project-specific input)"
+variable "tf_state_key" {
+  description = "The path/key in the S3 bucket for the Terraform state file."
+  type        = string
+  default     = "platform/terraform.tfstate"
+}
+variable "tf_state_region" {
+  description = "The AWS region for the S3 bucket used for the Terraform state file."
   type        = string
 }
-variable "environment" {
-  description = "Environment name (platform-level managed)"
-  type        = string
-}
-variable "purpose" {
-  description = "Purpose/function identifier (specific to this S3 bucket)"
-  type        = string
-}
-variable "bucket_name" {
-  description = "Name of the S3 bucket (optional, if not provided will be auto-generated)"
+variable "tf_state_dynamodb_table" {
+  description = "The name of the DynamoDB table for state locking."
   type        = string
   default     = null
-}
-variable "force_destroy" {
-  description = "A boolean that indicates all objects should be deleted from the bucket when the bucket is destroyed"
-  type        = bool
-  default     = false
-}
-variable "common_tags" {
-  description = "A map of tags to assign to all resources"
-  type        = map(string)
-  default     = {}
 }
