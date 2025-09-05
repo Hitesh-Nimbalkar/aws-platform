@@ -16,18 +16,22 @@ variable "common_tags" {
 variable "organization" {
   description = "Organization name"
   type        = string
+  default = "org"
 }
 variable "environment" {
   description = "Environment (dev, staging, prod)"
   type        = string
+    default = "dev"
 }
 variable "owner" {
   description = "Owner of the resources"
   type        = string
+    default     = "prj"
 }
 variable "project" {
   description = "Project name"
   type        = string
+    default     = "platform"
 }
 # =============================================================================
 # FEATURE FLAGS FOR AWS ACCOUNT LEVEL RESOURCES
