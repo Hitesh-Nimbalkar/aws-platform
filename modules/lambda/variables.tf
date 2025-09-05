@@ -58,7 +58,10 @@ variable "lambda_source_path" {
   type        = string
 }
 variable "policy_arns" {
-  description = "List of policy ARNs to attach to the Lambda role"
-  type        = list(string)
-  default     = []
+  description = "Map of policy ARNs to attach to the Lambda role. Keys must be static."
+  type        = map(string)
+  default     = {
+    basic = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+    # Add more policies as needed
+  }
 }

@@ -25,7 +25,7 @@ data "aws_iam_policy_document" "lambda_assume_role_policy" {
 # Attach user-supplied policies
 
 resource "aws_iam_role_policy_attachment" "lambda_policy_attachments" {
-    for_each   = toset(var.policy_arns)
+    for_each   = var.policy_arns
     role       = aws_iam_role.lambda_role.name
     policy_arn = each.value
 }
