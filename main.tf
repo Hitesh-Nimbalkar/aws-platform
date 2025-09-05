@@ -130,7 +130,7 @@ resource "aws_ecr_repository" "platform" {
     scan_on_push = true
   }
   tags = var.common_tags
-# }
+ }
 # # =============================================================================
 # # Fargate: Monitoring Service
 # # =============================================================================
