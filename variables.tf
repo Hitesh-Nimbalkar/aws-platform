@@ -78,21 +78,3 @@ variable "platform_ecr_repository" {
 
 # TERRAFORM STATE BACKEND CONFIGURATION
 # =============================================================================
-variable "tf_state_bucket" {
-  description = "The name of the S3 bucket for storing the Terraform state file."
-  type        = string
-}
-variable "tf_state_key" {
-  description = "The path/key in the S3 bucket for the Terraform state file."
-  type        = string
-  default     = "platform/terraform.tfstate"
-}
-variable "tf_state_region" {
-  description = "The AWS region for the S3 bucket used for the Terraform state file."
-  type        = string
-}
-variable "tf_state_dynamodb_table" {
-  description = "The name of the DynamoDB table for state locking."
-  type        = string
-  default     = null
-}
