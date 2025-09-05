@@ -75,10 +75,10 @@ variable "logs_lambda_memory" {
   type        = number
   default     = 256
 }
-variable "platform_ecr_repository" {
-  description = "ECR repository name for platform-level Docker images (e.g., grafana, monitoring, etc.)"
-  type        = string
-}
+# variable "platform_ecr_repository" {
+#   description = "ECR repository name for platform-level Docker images (e.g., grafana, monitoring, etc.)"
+#   type        = string
+# }
 
 # TERRAFORM STATE BACKEND CONFIGURATION
 # =============================================================================
