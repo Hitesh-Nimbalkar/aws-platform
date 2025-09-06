@@ -34,19 +34,24 @@ module "cloudwatch_logs_backup_lambda" {
   environment           = var.environment
   project               = var.project
   purpose               = "cloudwatch-logs-backup"
-  lambda_handler        = "main.lambda_handler"
-  lambda_runtime        = "python3.12"
-  lambda_source_path    = data.archive_file.cloudwatch_logs_backup_lambda.output_path
+
+  # For ZIP deployment
+  zip_file_path         = data.archive_file.cloudwatch_logs_backup_lambda.output_path
+
   memory_size           = 256
   timeout               = 900
+
   environment_variables = {
     S3_BUCKET = module.cloudwatch_logs_backup_bucket.bucket_name
   }
+
   policy_arns = {
     logs_to_s3 = aws_iam_policy.cloudwatch_logs_to_s3.arn
   }
+
   tags = var.common_tags
 }
+
 # =============================================================================
 # IAM Policy: CloudWatch Logs to S3
 # =============================================================================
