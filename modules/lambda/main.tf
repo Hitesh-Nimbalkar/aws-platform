@@ -33,8 +33,6 @@ resource "aws_cloudwatch_log_group" "lambda_log_group" {
   name              = local.lambda_log_group_name
   retention_in_days = 14
 }
-
-# Lambda function (ZIP or Image)
 resource "aws_lambda_function" "this" {
   function_name = local.lambda_function_name
   role          = aws_iam_role.lambda_role.arn
@@ -49,8 +47,14 @@ resource "aws_lambda_function" "this" {
     }
   }
 
-  # Deployment type: ZIP or Image
+  # Decide package type dynamically
   package_type = var.image_uri != null && var.image_uri != "" ? "Image" : "Zip"
-  filename     = var.image_uri == null || var.image_uri == "" ? var.zip_file_path : null
-  image_uri    = var.image_uri != null && var.image_uri != "" ? var.image_uri : null
+
+  # ZIP deployment: require filename, handler, runtime
+  filename = var.image_uri == null || var.image_uri == "" ? var.zip_file_path : null
+  handler  = var.image_uri == null || var.image_uri == "" ? var.lambda_handler : null
+  runtime  = var.image_uri == null || var.image_uri == "" ? var.lambda_runtime : null
+
+  # Image deployment
+  image_uri = var.image_uri != null && var.image_uri != "" ? var.image_uri : null
 }

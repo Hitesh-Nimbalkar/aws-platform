@@ -29,17 +29,19 @@ module "cloudwatch_logs_backup_bucket" {
 # Lambda: CloudWatch Logs Backup Lambda
 # =============================================================================
 module "cloudwatch_logs_backup_lambda" {
-  source                = "./modules/lambda"
-  organization          = var.organization
-  environment           = var.environment
-  project               = var.project
-  purpose               = "cloudwatch-logs-backup"
+  source       = "./modules/lambda"
+  organization = var.organization
+  environment  = var.environment
+  project      = var.project
+  purpose      = "cloudwatch-logs-backup"
 
   # For ZIP deployment
-  zip_file_path         = data.archive_file.cloudwatch_logs_backup_lambda.output_path
+  zip_file_path   = data.archive_file.cloudwatch_logs_backup_lambda.output_path
+  lambda_handler  = "main.lambda_handler"
+  lambda_runtime  = "python3.12"
 
-  memory_size           = 256
-  timeout               = 900
+  memory_size     = 256
+  timeout         = 900
 
   environment_variables = {
     S3_BUCKET = module.cloudwatch_logs_backup_bucket.bucket_name

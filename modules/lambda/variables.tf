@@ -50,3 +50,15 @@ variable "image_uri" {
   type    = string
   default = null
 }
+
+# Lambda handler for ZIP deployment
+variable "lambda_handler" {
+  type    = string
+  default = null
+}
+
+# Lambda runtime for ZIP deployment
+variable "lambda_runtime" {
+  type    = string
+  default = null
+}
