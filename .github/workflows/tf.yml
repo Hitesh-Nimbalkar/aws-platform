@@ -23,6 +23,10 @@ on:
         required: false
         default: 'false'
         type: boolean
+      force_unlock_id:
+        description: 'Optional: terraform state LOCK ID to force-unlock before apply/destroy'
+        required: false
+        default: ''
 
 jobs:
   terraform-plan:
@@ -50,7 +54,7 @@ jobs:
           terraform_version: 1.7.5
 
       - name: Terraform Init
-        run: terraform init
+        run: terraform init -input=false
 
       - name: Terraform Format
         run: terraform fmt -recursive
@@ -60,7 +64,7 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan -no-color -out=tfplan.txt
+        run: terraform plan -no-color -input=false -lock-timeout=5m -out=tfplan.txt
 
       - name: Show Plan Changes
         run: |
@@ -124,10 +128,14 @@ jobs:
           path: .
 
       - name: Terraform Init
-        run: terraform init
+        run: terraform init -input=false
+
+      - name: (Optional) Force Unlock
+        if: ${{ github.event.inputs.force_unlock_id != '' }}
+        run: terraform force-unlock -force "${{ github.event.inputs.force_unlock_id }}"
 
       - name: Terraform Apply (Manual Approval Required)
-        run: terraform apply -auto-approve tfplan.txt
+        run: terraform apply -input=false -lock-timeout=5m -auto-approve tfplan.txt
 
       - name: Update Summary After Apply
         run: |
@@ -168,10 +176,14 @@ jobs:
           terraform_version: 1.7.5
 
       - name: Terraform Init
-        run: terraform init
+        run: terraform init -input=false
+
+      - name: (Optional) Force Unlock
+        if: ${{ github.event.inputs.force_unlock_id != '' }}
+        run: terraform force-unlock -force "${{ github.event.inputs.force_unlock_id }}"
 
       - name: Terraform Destroy (Manual Approval Required)
-        run: terraform destroy -auto-approve
+        run: terraform destroy -input=false -lock-timeout=5m -auto-approve
 
       - name: Update Summary After Destroy
         run: |
