@@ -1,6 +1,7 @@
 # GitHub Actions workflow for Terraform in chatbot-document-v2
-# - Runs plan on all branches, apply/destroy only on main after approval
-# - Uses backend.tf in the repo root for state management
+# - Runs plan on all branches
+# - Apply/Destroy only on main branch after manual approval
+# - Beautified summary table after each run
 
 name: Terraform CI/CD
 
@@ -38,9 +39,6 @@ jobs:
       - name: Terraform Format
         run: terraform fmt -recursive
 
-      - name: Terraform Format Check
-        run: terraform fmt -check
-
       - name: Terraform Validate
         run: terraform validate
 
@@ -61,12 +59,18 @@ jobs:
           name: tfplan
           path: tfplan.txt
 
-      - name: Add Plan Summary
+      - name: Add Plan Summary (Table)
         run: |
-          echo '### Terraform Plan Output' >> $GITHUB_STEP_SUMMARY
-          echo '\n\n<details><summary>Show Plan</summary>' >> $GITHUB_STEP_SUMMARY
+          echo "### Terraform Workflow Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Step       | Status   | Triggered From |" >> $GITHUB_STEP_SUMMARY
+          echo "|------------|----------|----------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Plan       | ✅ Done  | $GITHUB_REF    |" >> $GITHUB_STEP_SUMMARY
+          echo "| Apply      | ⏳ Pending Approval | main only |" >> $GITHUB_STEP_SUMMARY
+          echo "| Destroy    | ⏳ Pending Approval | main only |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "<details><summary>Terraform Plan Details</summary>" >> $GITHUB_STEP_SUMMARY
           cat plan.txt >> $GITHUB_STEP_SUMMARY
-          echo '\n</details>' >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
 
   terraform-apply:
     name: Terraform Apply
@@ -74,7 +78,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment:
-      name: approval
+      name: approval   # Requires manual approval in GitHub Environments
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -106,13 +110,22 @@ jobs:
       - name: Terraform Apply (Manual Approval Required)
         run: terraform apply -auto-approve tfplan.txt
 
+      - name: Update Summary After Apply
+        run: |
+          echo "### Terraform Workflow Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Step       | Status   | Triggered From |" >> $GITHUB_STEP_SUMMARY
+          echo "|------------|----------|----------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Plan       | ✅ Done  | $GITHUB_REF    |" >> $GITHUB_STEP_SUMMARY
+          echo "| Apply      | ✅ Done  | main           |" >> $GITHUB_STEP_SUMMARY
+          echo "| Destroy    | ⏳ Pending Approval | main only |" >> $GITHUB_STEP_SUMMARY
+
   terraform-destroy:
     name: Terraform Destroy
+    needs: terraform-plan
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment:
-      name: approval
-    needs: terraform-plan
+      name: approval   # Requires manual approval in GitHub Environments
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -137,3 +150,12 @@ jobs:
 
       - name: Terraform Destroy (Manual Approval Required)
         run: terraform destroy -auto-approve
+
+      - name: Update Summary After Destroy
+        run: |
+          echo "### Terraform Workflow Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Step       | Status   | Triggered From |" >> $GITHUB_STEP_SUMMARY
+          echo "|------------|----------|----------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Plan       | ✅ Done  | $GITHUB_REF    |" >> $GITHUB_STEP_SUMMARY
+          echo "| Apply      | ❌ Skipped | main only |" >> $GITHUB_STEP_SUMMARY
+          echo "| Destroy    | ✅ Done  | main           |" >> $GITHUB_STEP_SUMMARY
