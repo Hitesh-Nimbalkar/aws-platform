@@ -1,16 +1,33 @@
 # GitHub Actions workflow for Terraform in chatbot-document-v2
 # - Runs plan on all branches
-# - Apply/Destroy only on main branch after manual approval
+# - Apply/Destroy only when triggered via workflow_dispatch inputs
 # - Beautified summary table after each run
 
 name: Terraform CI/CD
 
 on:
   workflow_dispatch:
+    inputs:
+      run_plan:
+        description: 'Run Terraform Plan'
+        required: false
+        default: 'false'
+        type: boolean
+      run_apply:
+        description: 'Run Terraform Apply'
+        required: false
+        default: 'false'
+        type: boolean
+      run_destroy:
+        description: 'Run Terraform Destroy'
+        required: false
+        default: 'false'
+        type: boolean
 
 jobs:
   terraform-plan:
     name: Terraform Plan
+    if: ${{ github.event.inputs.run_plan == 'true' }}
     runs-on: ubuntu-latest
     environment:
       name: approval
@@ -75,10 +92,10 @@ jobs:
   terraform-apply:
     name: Terraform Apply
     needs: terraform-plan
-    if: github.ref == 'refs/heads/main'
+    if: ${{ github.event.inputs.run_apply == 'true' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     environment:
-      name: approval   # Requires manual approval in GitHub Environments
+      name: approval
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -122,10 +139,10 @@ jobs:
   terraform-destroy:
     name: Terraform Destroy
     needs: terraform-plan
-    if: github.ref == 'refs/heads/main'
+    if: ${{ github.event.inputs.run_destroy == 'true' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     environment:
-      name: approval   # Requires manual approval in GitHub Environments
+      name: approval
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -155,7 +172,4 @@ jobs:
         run: |
           echo "### Terraform Workflow Summary" >> $GITHUB_STEP_SUMMARY
           echo "| Step       | Status   | Triggered From |" >> $GITHUB_STEP_SUMMARY
-          echo "|------------|----------|----------------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Plan       | ✅ Done  | $GITHUB_REF    |" >> $GITHUB_STEP_SUMMARY
-          echo "| Apply      | ❌ Skipped | main only |" >> $GITHUB_STEP_SUMMARY
-          echo "| Destroy    | ✅ Done  | main           |" >> $GITHUB_STEP_SUMMARY
+          echo "|------------
