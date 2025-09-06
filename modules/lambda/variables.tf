@@ -65,3 +65,10 @@ variable "policy_arns" {
     # Add more policies as needed
   }
 }
+
+
+variable "zip_file_path" {
+  description = "Path to the ZIP file containing the Lambda function code"
+  type        = string
+  default     = null
+}

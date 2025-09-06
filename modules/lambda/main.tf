@@ -35,23 +35,36 @@ resource "aws_cloudwatch_log_group" "lambda_log_group" {
     retention_in_days = 14
 }
 resource "aws_lambda_function" "this" {
-    function_name = local.lambda_function_name
-    role          = aws_iam_role.lambda_role.arn
-    memory_size   = var.memory_size
-    timeout       = var.timeout
-    tags          = var.tags
-    dynamic "environment" {
-        for_each = length(keys(var.environment_variables)) > 0 ? [1] : []
-        content {
-            variables = var.environment_variables
-        }
+  function_name = local.lambda_function_name
+  role          = aws_iam_role.lambda_role.arn
+  memory_size   = var.memory_size
+  timeout       = var.timeout
+  tags          = var.tags
+
+  # Environment variables (if any)
+  dynamic "environment" {
+    for_each = length(keys(var.environment_variables)) > 0 ? [1] : []
+    content {
+      variables = var.environment_variables
     }
-    # If image_uri is set, use Docker image, else use zip file
-    count        = var.image_uri != null && var.image_uri != "" ? 1 : 0
-    package_type = var.image_uri != null && var.image_uri != "" ? "Image" : null
-    image_uri    = var.image_uri != null && var.image_uri != "" ? var.image_uri : null
-    # If not using image, fallback to zip deployment
-    lifecycle {
-        ignore_changes = [image_uri, package_type]
-    }
+  }
+
+  # Decide package type dynamically
+  package_type = var.image_uri != null && var.image_uri != "" ? "Image" : "Zip"
+
+  # Deployment method
+  # Use 'filename' only if ZIP deployment
+  filename  = var.image_uri == null || var.image_uri == "" ? var.zip_file_path : null
+
+  # Use 'image_uri' only if Image deployment
+  image_uri = var.image_uri != null && var.image_uri != "" ? var.image_uri : null
+
+  # Optional: ignore changes so switching types doesn’t force replacement
+  lifecycle {
+    ignore_changes = [
+      image_uri,
+      filename,
+      package_type
+    ]
+  }
 }
