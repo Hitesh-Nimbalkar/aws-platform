@@ -1,7 +1,7 @@
 # GitHub Actions workflow for Terraform in chatbot-document-v2
-# - Runs plan/apply/destroy based on workflow_dispatch inputs
+# - Runs plan on all branches
 # - Apply/Destroy only on main branch after manual approval
-# - Beautified summary table with emojis after each run
+# - Beautified summary table after each run
 
 name: Terraform CI/CD
 
@@ -27,7 +27,6 @@ on:
 jobs:
   terraform-plan:
     name: Terraform Plan
-    if: ${{ github.event.inputs.run_plan == 'true' }}
     runs-on: ubuntu-latest
     environment:
       name: approval
@@ -78,25 +77,27 @@ jobs:
 
       - name: Add Plan Summary (Table)
         run: |
-          echo "## 🌍 Terraform Workflow Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔨 Step       | 📊 Status           | 🌱 Triggered From |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------------|---------------------|------------------|" >> $GITHUB_STEP_SUMMARY
-          echo "| 📝 Plan      | ✅ Completed        | $GITHUB_REF       |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🚀 Apply     | ⏳ Awaiting Approval | main only         |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔥 Destroy   | ⏳ Awaiting Approval | main only         |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "<details><summary>📖 Terraform Plan Details</summary>" >> $GITHUB_STEP_SUMMARY
-          cat plan.txt >> $GITHUB_STEP_SUMMARY
-          echo "</details>" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## 🌍 Terraform Workflow Summary"
+            echo ""
+            echo "| 🔨 Step    | 📊 Status            | 🌱 Triggered From |"
+            echo "|------------|----------------------|------------------|"
+            echo "| 📝 Plan    | ✅ Completed         | $GITHUB_REF       |"
+            echo "| 🚀 Apply   | ⏳ Awaiting Approval | main only         |"
+            echo "| 🔥 Destroy | ⏳ Awaiting Approval | main only         |"
+            echo ""
+            echo "<details><summary>📖 Terraform Plan Details</summary>"
+            cat plan.txt
+            echo "</details>"
+          } >> $GITHUB_STEP_SUMMARY
 
   terraform-apply:
     name: Terraform Apply
     needs: terraform-plan
-    if: ${{ github.event.inputs.run_apply == 'true' && github.ref == 'refs/heads/main' }}
+    if: ${{ github.event.inputs.run_apply == 'true' }}
     runs-on: ubuntu-latest
     environment:
-      name: approval
+      name: approval   # Requires manual approval in GitHub Environments
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -130,21 +131,23 @@ jobs:
 
       - name: Update Summary After Apply
         run: |
-          echo "## 🌍 Terraform Workflow Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔨 Step       | 📊 Status   | 🌱 Triggered From |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------------|-------------|------------------|" >> $GITHUB_STEP_SUMMARY
-          echo "| 📝 Plan      | ✅ Done     | $GITHUB_REF       |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🚀 Apply     | ✅ Done     | main              |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔥 Destroy   | ⏳ Pending  | main only         |" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## 🌍 Terraform Workflow Summary"
+            echo ""
+            echo "| 🔨 Step    | 📊 Status    | 🌱 Triggered From |"
+            echo "|------------|--------------|------------------|"
+            echo "| 📝 Plan    | ✅ Completed | $GITHUB_REF       |"
+            echo "| 🚀 Apply   | ✅ Done      | main              |"
+            echo "| 🔥 Destroy | ⏳ Pending   | main only         |"
+          } >> $GITHUB_STEP_SUMMARY
 
   terraform-destroy:
     name: Terraform Destroy
     needs: terraform-plan
-    if: ${{ github.event.inputs.run_destroy == 'true' && github.ref == 'refs/heads/main' }}
+    if: ${{ github.event.inputs.run_destroy == 'true' }}
     runs-on: ubuntu-latest
     environment:
-      name: approval
+      name: approval   # Requires manual approval in GitHub Environments
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -172,10 +175,12 @@ jobs:
 
       - name: Update Summary After Destroy
         run: |
-          echo "## 🌍 Terraform Workflow Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔨 Step       | 📊 Status   | 🌱 Triggered From |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------------|-------------|------------------|" >> $GITHUB_STEP_SUMMARY
-          echo "| 📝 Plan      | ✅ Done     | $GITHUB_REF       |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🚀 Apply     | ❌ Skipped  | main only         |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔥 Destroy   | ✅ Done     | main              |" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## 🌍 Terraform Workflow Summary"
+            echo ""
+            echo "| 🔨 Step    | 📊 Status    | 🌱 Triggered From |"
+            echo "|------------|--------------|------------------|"
+            echo "| 📝 Plan    | ✅ Completed | $GITHUB_REF       |"
+            echo "| 🚀 Apply   | ❌ Skipped   | main only         |"
+            echo "| 🔥 Destroy | ✅ Done      | main              |"
+          } >> $GITHUB_STEP_SUMMARY
