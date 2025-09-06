@@ -28,6 +28,9 @@ module "cloudwatch_logs_backup_bucket" {
 # =============================================================================
 # Lambda: CloudWatch Logs Backup Lambda
 # =============================================================================
+# =============================================================================
+# Lambda Module: CloudWatch Logs Backup
+# =============================================================================
 module "cloudwatch_logs_backup_lambda" {
   source       = "./modules/lambda"
   organization = var.organization
@@ -62,25 +65,18 @@ resource "aws_iam_policy" "cloudwatch_logs_to_s3" {
   description = "Allow Lambda to export CloudWatch logs to S3"
   policy      = data.aws_iam_policy_document.cloudwatch_logs_to_s3.json
 }
+
 data "aws_iam_policy_document" "cloudwatch_logs_to_s3" {
   statement {
-    actions = [
-      "logs:DescribeLogGroups",
-      "logs:DescribeLogStreams",
-      "logs:GetLogEvents",
-      "logs:FilterLogEvents"
-    ]
+    actions   = ["logs:DescribeLogGroups","logs:DescribeLogStreams","logs:GetLogEvents","logs:FilterLogEvents"]
     resources = ["*"]
   }
   statement {
-    actions = [
-      "s3:PutObject"
-    ]
-    resources = [
-      "${module.cloudwatch_logs_backup_bucket.bucket_arn}/*"
-    ]
+    actions   = ["s3:PutObject"]
+    resources = ["${module.cloudwatch_logs_backup_bucket.bucket_arn}/*"]
   }
 }
+
 # =============================================================================
 # CloudWatch Events: Schedule and Permissions
 # =============================================================================
@@ -88,20 +84,17 @@ resource "aws_cloudwatch_event_rule" "cloudwatch_logs_backup_schedule" {
   name                = "cloudwatch-logs-backup-schedule"
   schedule_expression = "rate(7 days)"
 }
-resource "aws_cloudwatch_event_target" "cloudwatch_logs_backup_lambda_target" {
-  for_each = module.cloudwatch_logs_backup_lambda.lambda_function_arn != null ? { lambda = module.cloudwatch_logs_backup_lambda.lambda_function_arn } : {}
 
+resource "aws_cloudwatch_event_target" "cloudwatch_logs_backup_lambda_target" {
   rule      = aws_cloudwatch_event_rule.cloudwatch_logs_backup_schedule.name
   target_id = "cloudwatch-logs-backup-lambda"
-  arn       = each.value
+  arn       = module.cloudwatch_logs_backup_lambda.lambda_function_arn
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch_events" {
-  for_each = module.cloudwatch_logs_backup_lambda.lambda_function_name != null ? { lambda = module.cloudwatch_logs_backup_lambda.lambda_function_name } : {}
-
   statement_id  = "AllowExecutionFromCloudWatchEvents"
   action        = "lambda:InvokeFunction"
-  function_name = each.value
+  function_name = module.cloudwatch_logs_backup_lambda.lambda_function_name
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.cloudwatch_logs_backup_schedule.arn
 }
