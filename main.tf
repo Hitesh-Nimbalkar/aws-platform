@@ -106,20 +106,20 @@ resource "aws_lambda_permission" "allow_cloudwatch_events" {
 # =============================================================================
 # Networking: VPC, Subnets, Security Groups
 # =============================================================================
-module "networking" {
-  source                = "./modules/networking"
-  organization          = var.organization
-  environment           = var.environment
-  project               = var.project
-  purpose               = "monitoring"
-  vpc_cidr              = "10.10.0.0/16" # Update as needed
-private_subnet_count  = 2
-    availability_zones    = ["ap-south-1a", "ap-south-1b"] # Hyderabad zones
-  ssh_cidr_blocks       = ["10.10.0.0/16"] # Restrict as needed
-  grafana_cidr_blocks   = ["10.10.0.0/16"] # Restrict as needed
-  tags                  = var.common_tags
-}
-# ============================================================================ #
+# module "networking" {
+#   source                = "./modules/networking"
+#   organization          = var.organization
+#   environment           = var.environment
+#   project               = var.project
+#   purpose               = "monitoring"
+#   vpc_cidr              = "10.10.0.0/16" # Update as needed
+# private_subnet_count  = 2
+#     availability_zones    = ["ap-south-1a", "ap-south-1b"] # Hyderabad zones
+#   ssh_cidr_blocks       = ["10.10.0.0/16"] # Restrict as needed
+#   grafana_cidr_blocks   = ["10.10.0.0/16"] # Restrict as needed
+#   tags                  = var.common_tags
+# }
+# # ============================================================================ #
 # FUNCTIONALITY: VPC NETWORKING                                              #
 # ============================================================================ #
 # =============================================================================
