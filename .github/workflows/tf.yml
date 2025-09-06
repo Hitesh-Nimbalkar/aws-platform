@@ -1,6 +1,6 @@
 # GitHub Actions workflow for Terraform in chatbot-document-v2
 # - Runs plan on all branches
-# - Apply/Destroy only on main branch after manual approval
+# - Apply/Destroy only if triggered by boolean inputs
 # - Beautified summary table after each run
 
 name: Terraform CI/CD
@@ -23,17 +23,12 @@ on:
         required: false
         default: 'false'
         type: boolean
-      force_unlock_id:
-        description: 'Optional: terraform state LOCK ID to force-unlock before apply/destroy'
-        required: false
-        default: ''
 
 jobs:
   terraform-plan:
     name: Terraform Plan
     runs-on: ubuntu-latest
-    environment:
-      name: approval
+    if: ${{ github.event.inputs.run_plan == 'true' || github.event.inputs.run_plan == '' }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -54,7 +49,7 @@ jobs:
           terraform_version: 1.7.5
 
       - name: Terraform Init
-        run: terraform init -input=false
+        run: terraform init
 
       - name: Terraform Format
         run: terraform fmt -recursive
@@ -64,7 +59,7 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan -no-color -input=false -lock-timeout=5m -out=tfplan.txt
+        run: terraform plan -no-color -out=tfplan.txt
 
       - name: Show Plan Changes
         run: |
@@ -87,8 +82,8 @@ jobs:
             echo "| 🔨 Step       | 📊 Status              | 🌱 Triggered From |"
             echo "|--------------|------------------------|------------------|"
             echo "| 📝 **Plan**   | ✅ Completed           | $GITHUB_REF       |"
-            echo "| 🚀 **Apply**  | ⏳ Awaiting Approval   | main only         |"
-            echo "| 🔥 **Destroy**| ⏳ Awaiting Approval   | main only         |"
+            echo "| 🚀 **Apply**  | ⏳ Waiting (if chosen) | main only         |"
+            echo "| 🔥 **Destroy**| ⏳ Waiting (if chosen) | main only         |"
             echo ""
             echo "<details><summary>📖 Terraform Plan Details</summary>"
             cat plan.txt
@@ -100,8 +95,6 @@ jobs:
     needs: terraform-plan
     if: ${{ github.event.inputs.run_apply == 'true' }}
     runs-on: ubuntu-latest
-    environment:
-      name: approval   # Requires manual approval in GitHub Environments
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -128,14 +121,10 @@ jobs:
           path: .
 
       - name: Terraform Init
-        run: terraform init -input=false
+        run: terraform init
 
-      - name: (Optional) Force Unlock
-        if: ${{ github.event.inputs.force_unlock_id != '' }}
-        run: terraform force-unlock -force "${{ github.event.inputs.force_unlock_id }}"
-
-      - name: Terraform Apply (Manual Approval Required)
-        run: terraform apply -input=false -lock-timeout=5m -auto-approve tfplan.txt
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan.txt
 
       - name: Update Summary After Apply
         run: |
@@ -154,8 +143,6 @@ jobs:
     needs: terraform-plan
     if: ${{ github.event.inputs.run_destroy == 'true' }}
     runs-on: ubuntu-latest
-    environment:
-      name: approval   # Requires manual approval in GitHub Environments
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -176,14 +163,10 @@ jobs:
           terraform_version: 1.7.5
 
       - name: Terraform Init
-        run: terraform init -input=false
+        run: terraform init
 
-      - name: (Optional) Force Unlock
-        if: ${{ github.event.inputs.force_unlock_id != '' }}
-        run: terraform force-unlock -force "${{ github.event.inputs.force_unlock_id }}"
-
-      - name: Terraform Destroy (Manual Approval Required)
-        run: terraform destroy -input=false -lock-timeout=5m -auto-approve
+      - name: Terraform Destroy
+        run: terraform destroy -auto-approve
 
       - name: Update Summary After Destroy
         run: |
