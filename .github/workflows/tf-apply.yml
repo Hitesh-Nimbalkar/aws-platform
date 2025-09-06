@@ -1,6 +1,6 @@
-# GitHub Actions workflow for Terraform Apply
-# - Runs plan and apply together on main branch or manual trigger
-# - Uses S3 backend for state
+# GitHub Actions workflow for Terraform Apply with automatic lock release
+# - Runs plan + apply together
+# - Checks and removes stale locks in DynamoDB S3 backend
 
 name: Terraform Apply
 
@@ -33,6 +33,19 @@ jobs:
 
       - name: Terraform Init
         run: terraform init -reconfigure
+
+      - name: Check for existing lock and remove
+        run: |
+          LOCK_TABLE="msumani-terraform-lock"
+          STATE_KEY="terraform.tfstate"
+          LOCK_ITEM=$(aws dynamodb get-item --table-name $LOCK_TABLE --key "{\"LockID\":{\"S\":\"$STATE_KEY\"}}" || echo "")
+          if [ -n "$LOCK_ITEM" ]; then
+            echo "🔒 Found existing lock. Releasing..."
+            aws dynamodb delete-item --table-name $LOCK_TABLE --key "{\"LockID\":{\"S\":\"$STATE_KEY\"}}"
+            echo "✅ Lock released."
+          else
+            echo "No existing lock found."
+          fi
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan
