@@ -1,39 +1,40 @@
-
-# Add tags, environment variables, memory size, and timeout support
-
-# Local for Lambda function name
+# Locals for naming
 locals {
-    lambda_function_name = join("-", [var.organization, var.environment, var.project, "lambda", var.purpose])
-    lambda_log_group_name = "/aws/lambda/${local.lambda_function_name}"
-    lambda_role_name = "${local.lambda_function_name}-role"
+  lambda_function_name = join("-", [var.organization, var.environment, var.project, "lambda", var.purpose])
+  lambda_log_group_name = "/aws/lambda/${local.lambda_function_name}"
+  lambda_role_name      = "${local.lambda_function_name}-role"
 }
-# Lambda module to create a Lambda function from a Python file
+
 # IAM Role for Lambda
 resource "aws_iam_role" "lambda_role" {
-    name = local.lambda_role_name
-    assume_role_policy = data.aws_iam_policy_document.lambda_assume_role_policy.json
+  name               = local.lambda_role_name
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role_policy.json
 }
-data "aws_iam_policy_document" "lambda_assume_role_policy" {
-    statement {
-        actions = ["sts:AssumeRole"]
-        principals {
-            type        = "Service"
-            identifiers = ["lambda.amazonaws.com"]
-        }
-    }
-}
-# Attach user-supplied policies
 
+data "aws_iam_policy_document" "lambda_assume_role_policy" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+  }
+}
+
+# Attach user-supplied policies
 resource "aws_iam_role_policy_attachment" "lambda_policy_attachments" {
-    for_each   = var.policy_arns
-    role       = aws_iam_role.lambda_role.name
-    policy_arn = each.value
+  for_each   = var.policy_arns
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = each.value
 }
-# CloudWatch Log Group for Lambda
+
+# CloudWatch Log Group
 resource "aws_cloudwatch_log_group" "lambda_log_group" {
-    name              = local.lambda_log_group_name
-    retention_in_days = 14
+  name              = local.lambda_log_group_name
+  retention_in_days = 14
 }
+
+# Lambda function (ZIP or Image)
 resource "aws_lambda_function" "this" {
   function_name = local.lambda_function_name
   role          = aws_iam_role.lambda_role.arn
@@ -41,7 +42,6 @@ resource "aws_lambda_function" "this" {
   timeout       = var.timeout
   tags          = var.tags
 
-  # Environment variables (if any)
   dynamic "environment" {
     for_each = length(keys(var.environment_variables)) > 0 ? [1] : []
     content {
@@ -49,22 +49,8 @@ resource "aws_lambda_function" "this" {
     }
   }
 
-  # Decide package type dynamically
+  # Deployment type: ZIP or Image
   package_type = var.image_uri != null && var.image_uri != "" ? "Image" : "Zip"
-
-  # Deployment method
-  # Use 'filename' only if ZIP deployment
-  filename  = var.image_uri == null || var.image_uri == "" ? var.zip_file_path : null
-
-  # Use 'image_uri' only if Image deployment
-  image_uri = var.image_uri != null && var.image_uri != "" ? var.image_uri : null
-
-  # Optional: ignore changes so switching types doesn’t force replacement
-  lifecycle {
-    ignore_changes = [
-      image_uri,
-      filename,
-      package_type
-    ]
-  }
+  filename     = var.image_uri == null || var.image_uri == "" ? var.zip_file_path : null
+  image_uri    = var.image_uri != null && var.image_uri != "" ? var.image_uri : null
 }

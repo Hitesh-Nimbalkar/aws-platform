@@ -1,74 +1,52 @@
-
-variable "image_uri" {
-  description = "ECR image URI for Lambda Docker deployment. If set, deploys Lambda from Docker image."
-  type        = string
-  default     = null
-}
-# Tags for Lambda resources
-variable "tags" {
-  description = "A map of tags to assign to the Lambda resources."
-  type        = map(string)
-  default     = {}
-}
-# Environment variables for Lambda
-variable "environment_variables" {
-  description = "A map of environment variables for the Lambda function."
-  type        = map(string)
-  default     = {}
-}
-# Memory size for Lambda
-variable "memory_size" {
-  description = "Amount of memory in MB your Lambda Function can use at runtime."
-  type        = number
-  default     = 128
-}
-# Timeout for Lambda
-variable "timeout" {
-  description = "The amount of time your Lambda Function has to run in seconds."
-  type        = number
-  default     = 3
-}
 variable "organization" {
-  description = "Organization name"
-  type        = string
+  type = string
 }
-variable "project" {
-  description = "Project name"
-  type        = string
-}
+
 variable "environment" {
-  description = "Deployment environment (e.g., dev, prod)"
-  type        = string
+  type = string
 }
+
+variable "project" {
+  type = string
+}
+
 variable "purpose" {
-  description = "Purpose of the Lambda function"
-  type        = string
+  type = string
 }
-variable "lambda_handler" {
-  description = "Handler for the Lambda function (e.g., main.handler)"
-  type        = string
+
+variable "memory_size" {
+  type    = number
+  default = 128
 }
-variable "lambda_runtime" {
-  description = "Runtime for the Lambda function"
-  type        = string
-  default     = "python3.12"
+
+variable "timeout" {
+  type    = number
+  default = 60
 }
-variable "lambda_source_path" {
-  description = "Path to the Python file for the Lambda function"
-  type        = string
+
+variable "tags" {
+  type    = map(string)
+  default = {}
 }
+
+variable "environment_variables" {
+  type    = map(string)
+  default = {}
+}
+
 variable "policy_arns" {
-  description = "Map of policy ARNs to attach to the Lambda role. Keys must be static."
-  type        = map(string)
-  default     = {
-    basic = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-    # Add more policies as needed
-  }
+  type    = map(string)
+  default = {}
 }
 
-
+# Path for ZIP deployment
 variable "zip_file_path" {
-  description = "Path to the ZIP file containing the Lambda function code"
-  type        = string
-  default     = null
+  type    = string
+  default = null
+}
+
+# URI for Image deployment
+variable "image_uri" {
+  type    = string
+  default = null
 }
