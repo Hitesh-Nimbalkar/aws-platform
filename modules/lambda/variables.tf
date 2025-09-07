@@ -62,3 +62,9 @@ variable "lambda_runtime" {
   type    = string
   default = null
 }
+
+variable "layers" {
+  description = "List of Lambda layer ARNs to attach to the function"
+  type        = list(string)
+  default     = []
+}
