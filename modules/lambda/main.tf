@@ -50,14 +50,12 @@ resource "aws_lambda_function" "this" {
   # Decide package type dynamically
   package_type = var.image_uri != null && var.image_uri != "" ? "Image" : "Zip"
 
-  # ZIP deployment: require filename, handler, runtime
-  filename = var.image_uri == null || var.image_uri == "" ? var.zip_file_path : null
-  handler  = var.image_uri == null || var.image_uri == "" ? var.lambda_handler : null
-  runtime  = var.image_uri == null || var.image_uri == "" ? var.lambda_runtime : null
+  # ZIP deployment
+  filename         = var.zip_file_path
+  handler          = var.lambda_handler
+  runtime          = var.lambda_runtime
+  source_code_hash = filebase64sha256(var.zip_file_path)
 
   # Image deployment
   image_uri = var.image_uri != null && var.image_uri != "" ? var.image_uri : null
-  filename = var.source_dir != null && var.source_dir != "" ? data.archive_file.lambda_zip[0].output_path : var.zip_file_path
-  source_code_hash = var.source_dir != null && var.source_dir != "" ? filebase64sha256(data.archive_file.lambda_zip[0].output_path) : null
-
 }
