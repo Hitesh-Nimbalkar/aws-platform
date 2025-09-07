@@ -57,4 +57,7 @@ resource "aws_lambda_function" "this" {
 
   # Image deployment
   image_uri = var.image_uri != null && var.image_uri != "" ? var.image_uri : null
+  filename = var.source_dir != null && var.source_dir != "" ? data.archive_file.lambda_zip[0].output_path : var.zip_file_path
+  source_code_hash = var.source_dir != null && var.source_dir != "" ? filebase64sha256(data.archive_file.lambda_zip[0].output_path) : null
+
 }
