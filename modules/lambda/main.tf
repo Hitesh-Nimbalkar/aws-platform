@@ -46,6 +46,8 @@ resource "aws_lambda_function" "this" {
       variables = var.environment_variables
     }
   }
+   #Layers
+   layers = var.layers
 
   # Decide package type dynamically
   package_type = var.image_uri != null && var.image_uri != "" ? "Image" : "Zip"
