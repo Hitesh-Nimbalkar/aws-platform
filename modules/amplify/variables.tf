@@ -14,57 +14,74 @@ variable "environment" {
 variable "purpose" {
   description = "Purpose/function identifier for the Amplify resources"
   type        = string
-}
+}# =============================================================================
+# AMPLIFY APP MODULE
+# =============================================================================
+
 variable "repo_url" {
-  description = "GitHub repository URL"
+  description = "GitHub repository URL for Amplify app"
   type        = string
 }
+
 variable "github_token" {
-  description = "GitHub personal access token"
-  type        = string
-  sensitive   = true
-}
-variable "build_spec_path" {
-  description = "Path to buildspec.yml file"
+  description = "GitHub OAuth token (leave null if using Amplify GitHub App)"
   type        = string
   default     = null
 }
+
+variable "branch_name" {
+  description = "Branch name to deploy"
+  type        = string
+}
+
+variable "framework" {
+  description = "Framework type (Web, React, Next.js, Angular, etc.)"
+  type        = string
+  default     = "Web"
+}
+
+variable "stage" {
+  description = "Stage (DEVELOPMENT, PRODUCTION, etc.)"
+  type        = string
+  default     = "DEVELOPMENT"
+}
+
+variable "enable_auto_build" {
+  description = "Enable auto build from repo commits"
+  type        = bool
+  default     = true
+}
+
 variable "environment_variables" {
-  description = "Map of environment variables for Amplify app"
+  description = "Environment variables for Amplify frontend"
   type        = map(string)
   default     = {}
 }
+
 variable "custom_rules" {
-  description = "List of custom rules for Amplify app"
-  type = list(object({
+  description = "Custom rules for redirects/rewrite"
+  type        = list(object({
     source = string
     target = string
     status = string
   }))
   default = []
 }
+
 variable "tags" {
-  description = "Tags to apply to Amplify resources"
+  description = "Common tags"
   type        = map(string)
   default     = {}
 }
-variable "branch_name" {
-  description = "Branch name to deploy"
+
+variable "build_spec_path" {
+  description = "Path to a custom Amplify build spec file"
   type        = string
-  default     = "main"
+  default     = null
 }
-variable "framework" {
-  description = "Framework type (e.g., Web)"
+
+variable "base_directory" {
+  description = "Root folder inside repo for Amplify build artifacts (e.g., ui, project-a-ui)"
   type        = string
-  default     = "Web"
-}
-variable "stage" {
-  description = "Stage of the branch (e.g., PRODUCTION)"
-  type        = string
-  default     = "PRODUCTION"
-}
-variable "enable_auto_build" {
-  description = "Enable auto build for the branch"
-  type        = bool
-  default     = true
+  default     = "/"
 }

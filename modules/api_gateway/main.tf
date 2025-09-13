@@ -15,35 +15,11 @@ locals {
 # =============================================================================
 # API GATEWAY-SPECIFIC CONFIGURATION VARIABLES
 # =============================================================================
-variable "stage_name" {
-  description = "Stage name for API Gateway deployment"
-  type        = string
-  default     = "prod"
-}
-variable "aws_region" {
-  description = "AWS region for API Gateway integrations"
-  type        = string
-}
-variable "endpoints" {
-  description = "List of API endpoints to create"
-  type = list(object({
-    path                    = string
-    http_method            = string
-    integration_type       = string
-    integration_uri        = string
-    integration_http_method = string
-  }))
-  default = []
-}
+
 variable "log_retention_in_days" {
   description = "CloudWatch log retention in days for API Gateway"
   type        = number
   default     = 14
-}
-variable "common_tags" {
-  description = "Common tags to apply to all resources"
-  type        = map(string)
-  default     = {}
 }
 # =============================================================================
 # API GATEWAY RESOURCES

@@ -33,15 +33,14 @@ variable "endpoints" {
   type = list(object({
     path                    = string
     http_method            = string
-    lambda_function_name   = string
-    lambda_invoke_arn      = string
-    enable_cors            = optional(bool, false)
-    authorization          = optional(string, "NONE")
-    api_key_required       = optional(bool, false)
+    integration_type       = string
+    integration_uri        = string
+    integration_http_method = string
   }))
+  default = []
 }
 variable "common_tags" {
-  description = "A map of tags to assign to all resources"
+  description = "Common tags to apply to all resources"
   type        = map(string)
   default     = {}
 }
