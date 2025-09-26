@@ -64,10 +64,6 @@ output "amplify_app_name" {
   value = local.amplify_app_name
 }
 
-output "amplify_branch_url" {
-  value = aws_amplify_branch.main.web_url
-}
-
 output "amplify_default_domain" {
   value = aws_amplify_app.this.default_domain
 }
