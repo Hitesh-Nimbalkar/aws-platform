@@ -1,18 +1,14 @@
-
-# -----------------------------------------------------------------------------
-# Locals
-# -----------------------------------------------------------------------------
-locals {
-  amplify_app_name = join("-", [var.organization, var.environment, var.project, "amplify", var.purpose])
-}
-
-# -----------------------------------------------------------------------------
-# Amplify App
-# -----------------------------------------------------------------------------
 resource "aws_amplify_app" "this" {
-  name        = local.amplify_app_name
-  repository  = var.repo_url
-  oauth_token = var.github_token
+  name       = local.amplify_app_name
+  repository = var.repo_url
+
+  # ✅ Only set oauth_token if a github_token was passed
+  dynamic "oauth_token" {
+    for_each = var.github_token != null ? [1] : []
+    content {
+      oauth_token = var.github_token
+    }
+  }
 
   build_spec = var.build_spec_path != null ? file(var.build_spec_path) : <<EOT
 version: 1
@@ -40,30 +36,4 @@ EOT
   }
 
   tags = var.tags
-}
-
-# -----------------------------------------------------------------------------
-# Amplify Branch
-# -----------------------------------------------------------------------------
-resource "aws_amplify_branch" "main" {
-  app_id           = aws_amplify_app.this.id
-  branch_name      = var.branch_name
-  framework        = var.framework
-  stage            = var.stage
-  enable_auto_build = var.enable_auto_build
-}
-
-# -----------------------------------------------------------------------------
-# Outputs
-# -----------------------------------------------------------------------------
-output "amplify_app_id" {
-  value = aws_amplify_app.this.id
-}
-
-output "amplify_app_name" {
-  value = local.amplify_app_name
-}
-
-output "amplify_default_domain" {
-  value = aws_amplify_app.this.default_domain
 }
