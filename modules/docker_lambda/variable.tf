@@ -22,10 +22,11 @@ variable "purpose" {
 # LAMBDA-SPECIFIC CONFIGURATION VARIABLES
 # =============================================================================
 variable "custom_policy_arns" {
-  description = "List of custom policy ARNs to attach to the Lambda IAM role (in addition to basic execution role)."
-  type        = list(string)
-  default     = []
+  description = "Map of IAM policy ARNs to attach to Lambda role"
+  type        = map(string)
+  default     = {}
 }
+
 variable "image_uri" {
   description = "ECR image URI for Lambda."
   type        = string
