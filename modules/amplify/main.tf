@@ -12,13 +12,8 @@ resource "aws_amplify_app" "this" {
   name       = local.amplify_app_name
   repository = var.repo_url
 
-  # ✅ Only set oauth_token if a github_token is provided
-  dynamic "oauth_token" {
-    for_each = var.github_token != null ? [1] : []
-    content {
-      oauth_token = var.github_token
-    }
-  }
+  # ✅ Correct optional oauth_token handling (no dynamic block needed)
+  oauth_token = var.github_token != null ? var.github_token : null
 
   build_spec = var.build_spec_path != null ? file(var.build_spec_path) : <<EOT
 version: 1
@@ -63,13 +58,16 @@ resource "aws_amplify_branch" "main" {
 # Outputs
 # -----------------------------------------------------------------------------
 output "amplify_app_id" {
-  value = aws_amplify_app.this.id
+  description = "ID of the Amplify App"
+  value       = aws_amplify_app.this.id
 }
 
 output "amplify_app_name" {
-  value = local.amplify_app_name
+  description = "Name of the Amplify App"
+  value       = local.amplify_app_name
 }
 
 output "amplify_default_domain" {
-  value = aws_amplify_app.this.default_domain
+  description = "Default domain of the Amplify App"
+  value       = aws_amplify_app.this.default_domain
 }
