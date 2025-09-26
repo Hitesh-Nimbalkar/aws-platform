@@ -1,22 +1,22 @@
-
 variable "organization" {
   description = "Organization name"
   type        = string
 }
+
 variable "project" {
   description = "Project name"
   type        = string
 }
+
 variable "environment" {
   description = "Environment name"
   type        = string
 }
+
 variable "purpose" {
   description = "Purpose/function identifier for the Amplify resources"
   type        = string
-}# =============================================================================
-# AMPLIFY APP MODULE
-# =============================================================================
+}
 
 variable "repo_url" {
   description = "GitHub repository URL for Amplify app"
